@@ -28,6 +28,7 @@ oo::class create CurlYQL {
     
     method query {query args} {
         variable url
+        variable ncode
 
         set url "https://query.yahooapis.com/v1/public/yql"
 
@@ -48,14 +49,15 @@ oo::class create CurlYQL {
             $curlHandle configure -url $url -bodyvar [namespace current]::html_result
             catch { $curlHandle perform } curlErrorNumber
             if { $curlErrorNumber != 0 } {
-                error [curl::easystrerror $curlErrorNumber]
+                return -code error [curl::easystrerror $curlErrorNumber]
             }
+
+            set ncode [$curlHandle getinfo responsecode]
 
             $curlHandle cleanup
         } else {
             variable tok
             variable querystring
-            variable ncode
 
             # for https
             http::register https 443 [list ::tls::socket -ssl3 0 -ssl2 0 -tls1 1]
@@ -63,17 +65,19 @@ oo::class create CurlYQL {
             set querystring [::http::formatQuery format json q $query {*}$args]
             append url ? $querystring
             if {[catch {set tok [http::geturl $url -method GET]}]} {
-                error "http::geturl failed"
+                return -code error "http::geturl failed"
             }
 
             set ncode [::http::ncode $tok]
             set [namespace current]::html_result [http::data $tok]
             http::cleanup $tok
-
-            if {$ncode != 200} {
-                error "ncode error"
-            }
         }
+
+        if {$ncode != 200} {
+            error "ncode error"
+        }
+
+        return -code ok
     }
     
     #

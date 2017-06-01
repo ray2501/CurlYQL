@@ -2,10 +2,12 @@
 
 This package is using TclCurl to send YQL query.
 
-[Yahoo! Query Language](https://developer.yahoo.com/yql/)  (YQL) is an SQL-like query language created by Yahoo!
-as part of their Developer Network.
+[Yahoo! Query Language](https://developer.yahoo.com/yql/)  (YQL) is 
+an SQL-like query language created by Yahoo! as part of their Developer Network.
 
 This extension needs Tcl 8.6, TclOO and [TclCurl](https://bitbucket.org/smh377/tclcurl) package.
+If TclCurl does not exist, this extension will try to use
+[http](http://www.tcl.tk/man/tcl/TclCmd/http.htm) and tls package.
 
 
 ## Interface
