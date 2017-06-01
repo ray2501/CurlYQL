@@ -74,7 +74,7 @@ oo::class create CurlYQL {
         }
 
         if {$ncode != 200} {
-            error "ncode error"
+            return -code error "ncode error"
         }
 
         return -code ok
