@@ -6,12 +6,14 @@
 package require Tcl 8.6
 package require TclOO
 
-set useTclCurl 1
+namespace eval ::CurlYQL {
+    set useTclCurl 1
+}
 
 if {[catch {package require TclCurl}]} {
     package require http
     package require tls
-    set useTclCurl 0
+    set ::CurlYQL::useTclCurl 0
 }
 
 package provide CurlYQL 0.1
@@ -32,7 +34,7 @@ oo::class create CurlYQL {
 
         set url "https://query.yahooapis.com/v1/public/yql"
 
-        if {$::useTclCurl == 1} {
+        if {$::CurlYQL::useTclCurl == 1} {
             variable pairs
 
             set pairs {}
