@@ -47,32 +47,37 @@ oo::class create CurlYQL {
         
             append url ? [join $pairs &]
 
-            set curlHandle [curl::init]
-            $curlHandle configure -url $url -bodyvar [namespace current]::html_result
-            catch { $curlHandle perform } curlErrorNumber
-            if { $curlErrorNumber != 0 } {
-                return -code error [curl::easystrerror $curlErrorNumber]
+            try {
+                set curlHandle [curl::init]
+                $curlHandle configure -url $url -bodyvar [namespace current]::html_result
+                $curlHandle perform
+                set ncode [$curlHandle getinfo responsecode]
+            } on error {em} {
+                error [curl::easystrerror $em]
+            } finally {
+                $curlHandle cleanup
             }
-
-            set ncode [$curlHandle getinfo responsecode]
-
-            $curlHandle cleanup
         } else {
             variable tok
             variable querystring
 
-            # for https
-            http::register https 443 [list ::tls::socket -ssl3 0 -ssl2 0 -tls1 1]
+            try {
+                # for https
+                http::register https 443 [list ::tls::socket -ssl3 0 -ssl2 0 -tls1 1]
 
-            set querystring [::http::formatQuery format json q $query {*}$args]
-            append url ? $querystring
-            if {[catch {set tok [http::geturl $url -method GET]}]} {
-                return -code error "http::geturl failed"
+                set querystring [::http::formatQuery format json q $query {*}$args]
+                append url ? $querystring
+
+                set tok [http::geturl $url -method GET -timeout 1500]
+                set ncode [::http::ncode $tok]
+                set [namespace current]::html_result [http::data $tok]
+            } on error {em} {
+                error "Error: $em"
+            } finally {
+                if {[info exists tok]==1} {
+                    http::cleanup $tok
+                }
             }
-
-            set ncode [::http::ncode $tok]
-            set [namespace current]::html_result [http::data $tok]
-            http::cleanup $tok
         }
 
         if {$ncode != 200} {
@@ -89,4 +94,3 @@ oo::class create CurlYQL {
         return $html_result
     }
 }
-
