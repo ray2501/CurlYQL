@@ -3,7 +3,7 @@
 #     Using TclCurl to send YQL query
 #
 
-package require Tcl 8.6
+package require Tcl 8.6-
 package require TclOO
 
 namespace eval ::CurlYQL {
